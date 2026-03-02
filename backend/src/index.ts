@@ -13,7 +13,7 @@ const app = express();
 // ── Middlewares ──────────────────────────────────────────────
 app.use(
  cors({
-  origin: ['http://localhost:3000', 'https://your-vercel-url.vercel.app'],
+  origin: ['http://localhost:3000', 'https://email-job-scheduler-six.vercel.app'],
   credentials: true
 })
 );
@@ -50,10 +50,10 @@ app.get(
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login",
+    failureRedirect: "https://email-job-scheduler-six.vercel.app/login",
   }),
   (_req, res) => {
-    res.redirect("http://localhost:3000/dashboard");
+    res.redirect("https://email-job-scheduler-six.vercel.app/dashboard");
   }
 );
 

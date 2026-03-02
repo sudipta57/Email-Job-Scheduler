@@ -22,7 +22,7 @@ export const scheduleEmail = (payload: {
   body: string
   sender: string
   scheduledAt: string
-}) => api.post('/emails/schedule', payload)
+}) => api.post('/api/emails/schedule', payload)
 
 export const scheduleBulk = (payload: BulkSchedulePayload) =>
   api
