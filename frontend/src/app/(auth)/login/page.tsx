@@ -40,7 +40,7 @@ export default function LoginPage() {
 
         {/* Google Login */}
         <a
-          href="https://email-job-scheduler-production-2024.up.railway.app/auth/google"
+          href="https://emailschedular-production.up.railway.app/auth/google"
           className="flex items-center justify-center gap-3 w-full bg-green-50 hover:bg-green-100 border border-green-200 rounded-xl py-3 text-gray-700 transition-colors mb-4"
         >
           <svg width="18" height="18" viewBox="0 0 18 18">
