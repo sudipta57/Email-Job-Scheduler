@@ -12,10 +12,10 @@ const app = express();
 
 // ── Middlewares ──────────────────────────────────────────────
 app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
+ cors({
+  origin: ['http://localhost:3000', 'https://your-vercel-url.vercel.app'],
+  credentials: true
+})
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
