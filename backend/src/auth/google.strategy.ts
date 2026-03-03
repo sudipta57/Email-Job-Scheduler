@@ -16,7 +16,7 @@ if (config.googleClientId && config.googleClientSecret) {
       {
         clientID: config.googleClientId,
         clientSecret: config.googleClientSecret,
-        callbackURL: "https://emailschedular-production.up.railway.app/auth/google/callback",
+        callbackURL: `${config.backendUrl}/auth/google/callback`,
       },
       (_accessToken, _refreshToken, profile, done) => {
         const user = {

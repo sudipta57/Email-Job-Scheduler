@@ -6,14 +6,22 @@ import session from "express-session";
 import { config } from "./config";
 import passport from "./auth/google.strategy";
 import emailRoutes from "./routes/email.routes";
-import "./workers/email.worker";
+
+let workerStarted = false;
+
+try {
+  require("./workers/email.worker");
+  workerStarted = true;
+} catch (err) {
+  console.error("Worker failed to start:", err);
+}
 
 const app = express();
 
 // ── Middlewares ──────────────────────────────────────────────
 app.use(
  cors({
-  origin: ['http://localhost:3000', 'https://email-job-scheduler-six.vercel.app'],
+  origin: ['http://localhost:3000', config.frontendUrl],
   credentials: true
 })
 );
@@ -35,7 +43,7 @@ app.use(passport.session());
 
 // ── Health check ────────────────────────────────────────────
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", workerStarted });
 });
 
 // ── Email routes ────────────────────────────────────────────
@@ -50,10 +58,10 @@ app.get(
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "https://email-job-scheduler-six.vercel.app/login",
+    failureRedirect: `${config.frontendUrl}/login`,
   }),
   (_req, res) => {
-    res.redirect("https://email-job-scheduler-six.vercel.app/dashboard");
+    res.redirect(`${config.frontendUrl}/dashboard`);
   }
 );
 
@@ -73,6 +81,6 @@ app.post("/auth/logout", (req, res, next) => {
 });
 
 // ── Start server ────────────────────────────────────────────
-app.listen(config.port, () => {
-  console.log(`Server running on http://localhost:${config.port}`);
-});
+app.listen(config.port, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${config.port}`)
+})
