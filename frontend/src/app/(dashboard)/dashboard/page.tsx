@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Clock, Filter, Inbox, RefreshCw, Search, Star } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -62,7 +62,7 @@ function EmptyState() {
   )
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, loading: authLoading, setUser, setToken } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -228,5 +228,19 @@ export default function DashboardPage() {
       </main>
 
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-white">
+          <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   )
 }
