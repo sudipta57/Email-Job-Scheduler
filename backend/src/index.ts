@@ -3,11 +3,35 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import IORedis from "ioredis";
 import { config } from "./config";
 import passport from "./auth/google.strategy";
 import emailRoutes from "./routes/email.routes";
 
 let workerStarted = false;
+
+const testRedis = async () => {
+  try {
+    const redisUrl = new URL(config.redisUrl);
+    const redis = new IORedis({
+      host: redisUrl.hostname,
+      port: Number(redisUrl.port),
+      username: redisUrl.username || "default",
+      password: redisUrl.password,
+      tls:
+        redisUrl.protocol === "rediss:"
+          ? { rejectUnauthorized: false }
+          : undefined,
+    });
+    await redis.ping();
+    console.log("✅ Redis connected successfully");
+    await redis.quit();
+  } catch (err) {
+    console.error("❌ Redis connection failed:", err);
+  }
+};
+
+testRedis();
 
 try {
   require("./workers/email.worker");
