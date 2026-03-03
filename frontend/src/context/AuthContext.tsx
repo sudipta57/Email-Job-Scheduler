@@ -16,6 +16,7 @@ type AuthContextValue = {
   user: User | null
   loading: boolean
   setUser: (user: User | null) => void
+  setToken: (token: string) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -40,8 +41,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  const setToken = useCallback((token: string) => {
+    localStorage.setItem('auth_token', token)
+  }, [])
+
   useEffect(() => {
-    void loadUser()
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      void loadUser()
+    } else {
+      setLoading(false)
+    }
   }, [loadUser])
 
   const value = useMemo(
@@ -49,8 +59,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       loading,
       setUser,
+      setToken,
     }),
-    [user, loading]
+    [user, loading, setToken]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

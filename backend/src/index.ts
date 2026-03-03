@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
-import session from "express-session";
+import jwt from "jsonwebtoken";
 import { config } from "./config";
 import passport from "./auth/google.strategy";
 import emailRoutes from "./routes/email.routes";
@@ -28,26 +28,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ── Session ─────────────────────────────────────────────────
-app.set('trust proxy', 1);
-
-app.use(
-  session({
-    secret: config.sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    },
-  })
-);
-
 // ── Passport ────────────────────────────────────────────────
 app.use(passport.initialize());
-app.use(passport.session());
 
 // ── Health check ────────────────────────────────────────────
 app.get("/health", (_req, res) => {
@@ -67,25 +49,28 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
     failureRedirect: `${config.frontendUrl}/login`,
+    session: false,
   }),
-  (_req, res) => {
-    res.redirect(`${config.frontendUrl}/dashboard`);
+  (req, res) => {
+    const token = jwt.sign(req.user as object, config.sessionSecret, { expiresIn: '7d' });
+    res.redirect(`${config.frontendUrl}/dashboard?token=${token}`);
   }
 );
 
 app.get("/auth/me", (req, res) => {
-  if (req.isAuthenticated()) {
-    res.status(200).json(req.user);
-  } else {
-    res.status(401).json({ message: "Not authenticated" });
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const token = authHeader.split(' ')[1];
+    const user = jwt.verify(token, config.sessionSecret);
+    return res.json(user);
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 });
 
-app.post("/auth/logout", (req, res, next) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    res.status(200).json({ message: "Logged out" });
-  });
+app.post("/auth/logout", (_req, res) => {
+  res.status(200).json({ message: "Logged out" });
 });
 
 // ── Start server ────────────────────────────────────────────

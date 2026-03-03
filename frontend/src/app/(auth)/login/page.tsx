@@ -12,7 +12,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (!loading && user) {
+    const token = localStorage.getItem('auth_token');
+    if (token && !loading && user) {
       router.replace('/dashboard');
     }
   }, [user, loading, router]);

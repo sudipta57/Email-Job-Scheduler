@@ -1,9 +1,17 @@
 import axios from 'axios'
 import type { BulkSchedulePayload, Email, User } from '@/types'
 
+const getToken = () => localStorage.getItem('auth_token')
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000',
   withCredentials: true,
+})
+
+api.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
 export const getScheduledEmails = async (): Promise<Email[]> => {

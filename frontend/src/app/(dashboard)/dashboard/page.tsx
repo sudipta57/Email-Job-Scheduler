@@ -1,10 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Clock, Filter, Inbox, RefreshCw, Search, Star } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-import { getScheduledEmails, getSentEmails } from '@/lib/api'
+import { getMe, getScheduledEmails, getSentEmails } from '@/lib/api'
 import type { Email } from '@/types'
 import Sidebar from '@/components/layout/Sidebar'
 
@@ -63,14 +63,26 @@ function EmptyState() {
 }
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, setUser, setToken } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [activeTab, setActiveTab] = useState<Tab>('scheduled')
   const [scheduledEmails, setScheduledEmails] = useState<Email[]>([])
   const [sentEmails, setSentEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
+
+  // Handle token from URL (OAuth redirect)
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) {
+      localStorage.setItem('auth_token', token)
+      setToken(token)
+      router.replace('/dashboard')
+      void getMe().then(setUser)
+    }
+  }, [searchParams, router, setUser, setToken])
 
   useEffect(() => {
     if (!authLoading && !user) {
